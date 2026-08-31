@@ -1,0 +1,281 @@
+### GET /
+GET http://localhost:4545/
+
+### GET /api/users
+GET http://localhost:4545/api/users
+
+### GET /api/users/id:
+GET http://localhost:4545/api/users/0a7fb4aa-94cf-4e7e-a8e4-53d2acf900a6
+
+### POST /api/users
+POST http://localhost:4545/api/users
+Content-Type: application/json
+
+{
+    "email": "test@example.com",
+    "username": "testuser",
+    "password": "password123",
+    "firstName": "Test",
+    "lastName": "User",
+    "bio": "Learning Reflect"
+}
+
+### create user2
+POST http://localhost:4545/api/users
+Content-Type: application/json
+
+{
+    "email": "test2@example.com",
+    "username": "testuser2",
+    "password": "password123",
+    "firstName": "Test2",
+    "lastName": "User2",
+    "bio": "Learning Reflect"
+}
+
+### POST /api/users 3
+POST http://localhost:4545/api/users
+Content-Type: application/json
+
+{
+    "email": "test@example3.com",
+    "username": "testuser3",
+    "password": "password123",
+    "firstName": "Test3",
+    "lastName": "User3",
+    "bio": "Learning Reflect"
+}
+
+### Logoin moderator
+POST http://localhost:4545/api/auth/login
+Content-Type: application/json
+
+{
+   "email": "moderator@reflect.local",
+   "password": "as0998529895"
+}
+
+### POST /api/auth/login
+POST http://localhost:4545/api/auth/login
+Content-Type: application/json
+
+{
+  "email":  "test@example.com",
+  "password":  "password123"
+}
+
+
+### POST /api/auth/login2
+POST http://localhost:4545/api/auth/login
+Content-Type: application/json
+
+{
+  "email":  "test2@example.com",
+  "password":  "password123"
+}
+
+
+### POST /api/auth/login3
+POST http://localhost:4545/api/auth/login
+Content-Type: application/json
+
+{
+  "email":  "test@example3.com",
+  "password":  "password123"
+}
+
+
+### test
+GET http://localhost:4545/api/users/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJiYzVhNGEzZi00OThlLTQxMDItOGJjYy1iY2FmNGIyODU2M2IiLCJpYXQiOjE3OTExNzI3MjQsImV4cCI6MTc5MTM0NTUyNH0.8vnKlmJiWGcltx9JQfqsMAUqwXXkf-78zwNHy-sDj2Q
+
+### privacy settings
+PATCH http://localhost:4545/api/users/me/privacy
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJiYzVhNGEzZi00OThlLTQxMDItOGJjYy1iY2FmNGIyODU2M2IiLCJpYXQiOjE3OTExNzI3MjQsImV4cCI6MTc5MTM0NTUyNH0.8vnKlmJiWGcltx9JQfqsMAUqwXXkf-78zwNHy-sDj2Q
+Content-Type: application/json
+
+{
+  "allowFeedbackFrom": "everyone",
+  "showFriendsList": true,
+  "showReputation": true
+}
+
+### POST /api/feedback
+POST http://localhost:4545/api/feedback
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwYTdmYjRhYS05NGNmLTRlN2UtYThlNC01M2QyYWNmOTAwYTYiLCJpYXQiOjE3OTQyMzUzNDgsImV4cCI6MTc5NDQwODE0OH0.VOgyXMJGqv6PdesJhSZ09ns0qaryiW-qZ4GBDX4JqLo
+Content-Type: application/json
+
+{
+    "toUserId": "bc5a4a3f-498e-4102-8bcc-bcaf4b28563b",
+    "type": "APOLOGY",
+    "dimension": "RESPECT",
+    "content": "sup!",
+    "isAnonymous": true,
+    "allowIdentityReveal": false
+}
+
+### feedback with type and dimension
+POST http://localhost:4545/api/feedback
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwYTdmYjRhYS05NGNmLTRlN2UtYThlNC01M2QyYWNmOTAwYTYiLCJpYXQiOjE3OTMwODM3MzcsImV4cCI6MTc5MzI1NjUzN30.kKahR4Ekq2Mz8hINJTjPUgK4UCgovV7BtI76u2o1QsI
+Content-Type: application/json
+
+{
+    "toUserId": "3b2ea514-9167-416a-bd7b-a465b8f397d1",
+    "content": "sup2!",
+    "type": "CONSTRUCTIVE",
+    "dimension": "KINDNESS",
+    "isAnonymous": false,
+    "allowIdentityReveal": false
+}
+
+### Feedback to myself
+POST http://localhost:4545/api/feedback
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwYTdmYjRhYS05NGNmLTRlN2UtYThlNC01M2QyYWNmOTAwYTYiLCJpYXQiOjE3ODk5MjY1NzMsImV4cCI6MTc5MDA5OTM3M30.L4UaGNe2lSeUPAIAi1VvRPidGHi01Dd8rbPKfguadkY
+Content-Type: application/json
+
+{
+  "toUserId": "0a7fb4aa-94cf-4e7e-a8e4-53d2acf900a6",
+  "content": "I'm awesome"
+}
+
+### Get feedback for user
+GET http://localhost:4545/api/feedback/bc5a4a3f-498e-4102-8bcc-bcaf4b28563b
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIzYjJlYTUxNC05MTY3LTQxNmEtYmQ3Yi1hNDY1YjhmMzk3ZDEiLCJpYXQiOjE3OTMwODM2NzcsImV4cCI6MTc5MzI1NjQ3N30.1NeQLuxmOEPm4dkwauE6VAE7_16-_xRffYl5v5AjSq8
+
+### Get feedbackIdentity
+POST http://localhost:4545/api/feedback/60b3a624-301b-40d8-b696-37d2a7516d95/reveal-identity
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJiYzVhNGEzZi00OThlLTQxMDItOGJjYy1iY2FmNGIyODU2M2IiLCJpYXQiOjE3OTMwNzY3NDYsImV4cCI6MTc5MzI0OTU0Nn0.y0WpX3nSSjPX0cH82oimHq0bVAkjibt4P2Wg4u_l_EM
+
+
+### PATCH /api/feedback/:feedbackId/visibility
+PATCH http://localhost:4545/api/feedback/fc8ee879-ea05-4c91-88cd-d5ead8d4bdf0/visibility
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJiYzVhNGEzZi00OThlLTQxMDItOGJjYy1iY2FmNGIyODU2M2IiLCJpYXQiOjE3OTI0MjIyNTQsImV4cCI6MTc5MjU5NTA1NH0.kDvNUWKqDo6M6pglLSYz9VPd3hT5vepVKqhzMERDfFA
+
+{
+    "visibility": "PRIVATE"
+}
+
+### DELETE feedback
+DELETE  http://localhost:4545/api/feedback/29d1b93e-bb25-4d2c-bd39-632616233c04
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIzYjJlYTUxNC05MTY3LTQxNmEtYmQ3Yi1hNDY1YjhmMzk3ZDEiLCJpYXQiOjE3OTAyNzIzMDUsImV4cCI6MTc5MDQ0NTEwNX0.2UE1apJH2PbFLgtK3n2DJbn9SksqlUGYbnV0tRiIgoo
+
+### POST /api/friend-request
+POST http://localhost:4545/api/friend-request
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwYTdmYjRhYS05NGNmLTRlN2UtYThlNC01M2QyYWNmOTAwYTYiLCJpYXQiOjE3OTMyMjI4OTAsImV4cCI6MTc5MzM5NTY5MH0.wLBXx_KgQmYpm-RIvXcKs-9_TVjqCzxeaYngduAh9vY
+Content-Type: application/json
+
+{
+    "recipientId": "3b2ea514-9167-416a-bd7b-a465b8f397d1"
+}
+
+### PATCH /api/friend-request/:requestId/accept
+PATCH http://localhost:4545/api/friend-request/25b26bea-68d9-4b9c-9917-736f63127a8e/accept
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJiYzVhNGEzZi00OThlLTQxMDItOGJjYy1iY2FmNGIyODU2M2IiLCJpYXQiOjE3OTEwOTUwNTEsImV4cCI6MTc5MTI2Nzg1MX0.7Hpv3Jd2uw_nl9BzQaWj5LK8zwj0mZr_INkRwwmKuR0
+
+### GET /api/friend-request/incoming
+GET http://localhost:4545/api/friend-request/incoming
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJiYzVhNGEzZi00OThlLTQxMDItOGJjYy1iY2FmNGIyODU2M2IiLCJpYXQiOjE3OTEwOTUwNTEsImV4cCI6MTc5MTI2Nzg1MX0.7Hpv3Jd2uw_nl9BzQaWj5LK8zwj0mZr_INkRwwmKuR0
+
+### GET /api/friend-request/outgoing
+GET http://localhost:4545/api/friend-request/outgoing
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwYTdmYjRhYS05NGNmLTRlN2UtYThlNC01M2QyYWNmOTAwYTYiLCJpYXQiOjE3OTEwOTI4MDgsImV4cCI6MTc5MTI2NTYwOH0.FCG0Yzci8sLr2J-EpMa_IOHHaBnCPTDv3ZGlI8G-3Xo
+
+### GET /api/friendship
+GET http://localhost:4545/api/friendship/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwYTdmYjRhYS05NGNmLTRlN2UtYThlNC01M2QyYWNmOTAwYTYiLCJpYXQiOjE3OTIwODY4OTQsImV4cCI6MTc5MjI1OTY5NH0.n0mzyKHFuSDBzMd26wsU5LwzI7o0-xncTglWQySDePI
+
+
+### Get Friends by ID
+GET http://localhost:4545/api/friendship/0a7fb4aa-94cf-4e7e-a8e4-53d2acf900a6
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIzYjJlYTUxNC05MTY3LTQxNmEtYmQ3Yi1hNDY1YjhmMzk3ZDEiLCJpYXQiOjE3OTIwODY3NTAsImV4cCI6MTc5MjI1OTU1MH0.ek_H79zwoWU2G3zvkSSjqOqvuMOTPqC3s7wg_nTOCVg
+
+### DELETE /api/friendship/:friendId
+DELETE http://localhost:4545/api/friendship/3b2ea514-9167-416a-bd7b-a465b8f397d1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwYTdmYjRhYS05NGNmLTRlN2UtYThlNC01M2QyYWNmOTAwYTYiLCJpYXQiOjE3OTEwNjUzNTAsImV4cCI6MTc5MTIzODE1MH0.FLX-0YMV6tLG9fGIM_eJ2aypX6AmIAEa7uIrSh9kOR0
+
+### Cancel friend request
+DELETE http://localhost:4545/api/friend-request/cc0b9d8c-ddcc-43f0-a0f3-9caed4efd024/cancel
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwYTdmYjRhYS05NGNmLTRlN2UtYThlNC01M2QyYWNmOTAwYTYiLCJpYXQiOjE3OTEwOTI4MDgsImV4cCI6MTc5MTI2NTYwOH0.FCG0Yzci8sLr2J-EpMa_IOHHaBnCPTDv3ZGlI8G-3Xo
+
+### Notifications
+GET http://localhost:4545/api/notifications/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJiYzVhNGEzZi00OThlLTQxMDItOGJjYy1iY2FmNGIyODU2M2IiLCJpYXQiOjE3OTEwOTUwNTEsImV4cCI6MTc5MTI2Nzg1MX0.7Hpv3Jd2uw_nl9BzQaWj5LK8zwj0mZr_INkRwwmKuR0
+
+### Mark as read
+PATCH http://localhost:4545/api/notifications/236d7922-618f-409a-83e7-77902c53f8cf/read
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJiYzVhNGEzZi00OThlLTQxMDItOGJjYy1iY2FmNGIyODU2M2IiLCJpYXQiOjE3OTEwOTUwNTEsImV4cCI6MTc5MTI2Nzg1MX0.7Hpv3Jd2uw_nl9BzQaWj5LK8zwj0mZr_INkRwwmKuR0
+
+
+### Get reputation 
+GET http://localhost:4545/api/users/testuser3/reputation
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJiYzVhNGEzZi00OThlLTQxMDItOGJjYy1iY2FmNGIyODU2M2IiLCJpYXQiOjE3OTI0MjIyNTQsImV4cCI6MTc5MjU5NTA1NH0.kDvNUWKqDo6M6pglLSYz9VPd3hT5vepVKqhzMERDfFA
+
+### Respond to  feedback
+POST http://localhost:4545/api/feedback/60b3a624-301b-40d8-b696-37d2a7516d95/responses
+Authorization: BearereyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJiYzVhNGEzZi00OThlLTQxMDItOGJjYy1iY2FmNGIyODU2M2IiLCJpYXQiOjE3OTI0MjIyNTQsImV4cCI6MTc5MjU5NTA1NH0.kDvNUWKqDo6M6pglLSYz9VPd3hT5vepVKqhzMERDfFA
+Content-Type: application/json
+
+{
+  "responseType": "UNDERSTAND",
+  "body": "im so proud of u nigga!"
+}
+
+### Get response by id
+GET http://localhost:4545/api/feedback/60b3a624-301b-40d8-b696-37d2a7516d95/responses
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJiYzVhNGEzZi00OThlLTQxMDItOGJjYy1iY2FmNGIyODU2M2IiLCJpYXQiOjE3OTI0MjIyNTQsImV4cCI6MTc5MjU5NTA1NH0.kDvNUWKqDo6M6pglLSYz9VPd3hT5vepVKqhzMERDfFA
+
+### Get reponse ID
+GET http://localhost:4545/api/feedback/60b3a624-301b-40d8-b696-37d2a7516d95/responses
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwYTdmYjRhYS05NGNmLTRlN2UtYThlNC01M2QyYWNmOTAwYTYiLCJpYXQiOjE3OTI0MzM5NTQsImV4cCI6MTc5MjYwNjc1NH0.PkJJIgQ9UK1u3v0bZYy-wC786q0l1duSF-KbKYQqoXE
+
+### create report
+POST http://localhost:4545/api/feedback/1197a456-1969-4eba-a45e-3a2fa1a0f594/reports
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwYTdmYjRhYS05NGNmLTRlN2UtYThlNC01M2QyYWNmOTAwYTYiLCJpYXQiOjE3OTI5MjMyNTIsImV4cCI6MTc5MzA5NjA1Mn0.-7lZS0pfthf-ml1enUXbyBehV8_skZk8z8_Q_mutIVA
+Content-Type: application/json
+
+{
+  "reason" : "no reason"
+}
+
+### Moderation
+GET http://localhost:4545/api/moderation/pending
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwM2E1YTdiNi05Y2U1LTQ2NjEtYWQzYi05NWZkOTIyZTQxYWYiLCJpYXQiOjE3OTI5MjM2MzAsImV4cCI6MTc5MzA5NjQzMH0.IOo9sGt8F--jf3Qe56j5LgINb47xtur3T8Mdl6I7m5Y
+
+### Get report history
+GET http://localhost:4545/api/moderation/reports/d88fb09e-0c3b-4afa-8ea8-cd330b5b5771/history
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwM2E1YTdiNi05Y2U1LTQ2NjEtYWQzYi05NWZkOTIyZTQxYWYiLCJpYXQiOjE3OTI5MjM2MzAsImV4cCI6MTc5MzA5NjQzMH0.IOo9sGt8F--jf3Qe56j5LgINb47xtur3T8Mdl6I7m5Y
+
+### update status
+PATCH http://localhost:4545/api/moderation/reports/d88fb09e-0c3b-4afa-8ea8-cd330b5b5771/status
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwM2E1YTdiNi05Y2U1LTQ2NjEtYWQzYi05NWZkOTIyZTQxYWYiLCJpYXQiOjE3OTI5MjM2MzAsImV4cCI6MTc5MzA5NjQzMH0.IOo9sGt8F--jf3Qe56j5LgINb47xtur3T8Mdl6I7m5Y
+
+{
+  "newStatus": "UNDER_REVIEW",
+  "explanation": "Reviewing reported feedback"
+}
+
+### Hide report
+PATCH http://localhost:4545/api/moderation/reports/d88fb09e-0c3b-4afa-8ea8-cd330b5b5771/hide-feedback
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwM2E1YTdiNi05Y2U1LTQ2NjEtYWQzYi05NWZkOTIyZTQxYWYiLCJpYXQiOjE3OTI5MjM2MzAsImV4cCI6MTc5MzA5NjQzMH0.IOo9sGt8F--jf3Qe56j5LgINb47xtur3T8Mdl6I7m5Y
+
+### Block User
+POST http://localhost:4545/api/block/3b2ea514-9167-416a-bd7b-a465b8f397d1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwYTdmYjRhYS05NGNmLTRlN2UtYThlNC01M2QyYWNmOTAwYTYiLCJpYXQiOjE3OTMyMjI4OTAsImV4cCI6MTc5MzM5NTY5MH0.wLBXx_KgQmYpm-RIvXcKs-9_TVjqCzxeaYngduAh9vY
+
+### Get blocked users
+GET http://localhost:4545/api/block/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwYTdmYjRhYS05NGNmLTRlN2UtYThlNC01M2QyYWNmOTAwYTYiLCJpYXQiOjE3OTMyMjI4OTAsImV4cCI6MTc5MzM5NTY5MH0.wLBXx_KgQmYpm-RIvXcKs-9_TVjqCzxeaYngduAh9vY
+
+### Unblock users
+DELETE http://localhost:4545/api/block/3b2ea514-9167-416a-bd7b-a465b8f397d1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwYTdmYjRhYS05NGNmLTRlN2UtYThlNC01M2QyYWNmOTAwYTYiLCJpYXQiOjE3OTMyMjI4OTAsImV4cCI6MTc5MzM5NTY5MH0.wLBXx_KgQmYpm-RIvXcKs-9_TVjqCzxeaYngduAh9vY
+
+### Resolve feedback
+POST http://localhost:4545/api/feedback/d6197f15-152a-4a2c-970b-eaea1a9f71dd/resolve
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJiYzVhNGEzZi00OThlLTQxMDItOGJjYy1iY2FmNGIyODU2M2IiLCJpYXQiOjE3OTQyMzU0NzksImV4cCI6MTc5NDQwODI3OX0.kCsWNxXBnKFop-606ebQAI_B3S6fQtOYpglZ34aFnnk
+
+### Get reputation history
+GET http://localhost:4545/api/reputation/bc5a4a3f-498e-4102-8bcc-bcaf4b28563b/history
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJiYzVhNGEzZi00OThlLTQxMDItOGJjYy1iY2FmNGIyODU2M2IiLCJpYXQiOjE3OTQyMzU0NzksImV4cCI6MTc5NDQwODI3OX0.kCsWNxXBnKFop-606ebQAI_B3S6fQtOYpglZ34aFnnk
