@@ -2,7 +2,8 @@ import {
     createUser as createUserService,
     getAllUsers,
     getUserById as getUserByIdService,
-    updateUserProfile as updateUserProfileService
+    updateUserProfile as updateUserProfileService,
+    getMe as getMeService
 } from '../services/userServices.js';
 
 const createUser = async (req, res) => {
@@ -55,6 +56,12 @@ const updateUserProfile = async (req, res) => {
     const {id} = req.params;
     const {firstName, lastName, bio} = req.body;
 
+    if(req.user.userId !== id){
+        return res.status(403).json({
+            error: "You are only allowed to modify Your own profile"
+        })
+    }
+
     try {
         const profile = await updateUserProfileService(id, {firstName, lastName, bio});
         res.status(200).json(profile);
@@ -63,9 +70,32 @@ const updateUserProfile = async (req, res) => {
     }
 }
 
+const getMe = async (req, res) => {
+    const userId = req.user.userId;
+
+    try {
+        const user = await getMeService(userId);
+
+        if (!user) {
+            return res.status(404).json({
+                error: "User not found"
+            });
+        }
+
+        return res.status(200).json(user);
+    } catch (err) {
+        console.error(err);
+
+        return res.status(500).json({
+            error: "Could not fetch current user"
+        });
+    }
+};
+
 export {
     createUser,
     getUsers,
     getUserById,
-    updateUserProfile
+    updateUserProfile,
+    getMe
 }
