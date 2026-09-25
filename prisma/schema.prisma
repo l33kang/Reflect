@@ -46,6 +46,7 @@ model Feedback {
     fromUserId  String
     toUserId    String
     content     String
+    isPublic    Boolean  @default(false)
     createdAt   DateTime @default(now())
 
     fromUser User @relation("FeedbackGiven", fields: [fromUserId], references: [id])
