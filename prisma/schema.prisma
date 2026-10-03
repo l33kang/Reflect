@@ -18,6 +18,13 @@ model User {
 
     feedbackGiven    Feedback[] @relation("FeedbackGiven")
     feedbackReceived Feedback[] @relation("FeedbackReceived")
+
+    friendRequestsSent      FriendRequest[] @relation("FriendRequestsSent")
+    friendRequestsReceived  FriendRequest[] @relation("FriendRequestsReceived")
+
+    firstUser       Friendship[] @relation("FirstUser")
+    secondUser      Friendship[] @relation("SecondUser")
+
 }
 
 model Profile {
@@ -51,4 +58,36 @@ model Feedback {
 
     fromUser User @relation("FeedbackGiven", fields: [fromUserId], references: [id])
     toUser   User @relation("FeedbackReceived", fields: [toUserId], references: [id])
+}
+
+enum FriendRequestStatus {
+    PENDING
+    ACCEPTED
+    REJECTED
+}
+
+model FriendRequest {
+    id          String                  @id @default(uuid())
+    senderId    String
+    recipientId String
+    status      FriendRequestStatus     @default(PENDING)
+    createdAt   DateTime                @default(now())
+    updatedAt   DateTime                @updatedAt
+
+    sender    User @relation("FriendRequestsSent", fields: [senderId], references: [id])
+    recipient User @relation("FriendRequestsReceived", fields: [recipientId], references: [id])
+
+    @@unique([senderId, recipientId])
+}
+
+model Friendship {
+    id        String   @id @default(uuid())
+    userAId   String
+    userBId   String
+    createdAt DateTime @default(now())
+
+    userA User @relation("FirstUser", fields: [userAId], references: [id])
+    userB User @relation("SecondUser", fields: [userBId], references: [id])
+
+    @@unique([userAId, userBId])
 }
