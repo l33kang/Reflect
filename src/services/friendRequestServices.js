@@ -117,7 +117,94 @@ const acceptFriendRequest = async (requestId, userId) => {
     return result;
 }
 
+const rejectFriendRequest = async (requestId, userId) => {
+    const request = await prisma.friendRequest.findUnique({
+        where: {
+            id: requestId
+        }
+    })
+
+    if(!request) {
+        throw new Error("Not found!");
+    }
+
+    if(request.recipientId !== userId) {
+        throw new Error("Not authorized");
+    }
+
+    if(request.status !== "PENDING") {
+        throw new Error("Request is not pending");
+    }
+
+    const requestUpdate = await prisma.friendRequest.update({
+        where: {
+            id: requestId
+        }, 
+        data: {
+            status: "REJECTED"
+        }
+    })
+
+    return requestUpdate;
+
+} 
+
+const cancelFriendRequest = async (requestId, userId) => {
+    const request = await prisma.friendRequest.findUnique({
+        where: {
+            id: requestId
+        }
+    })
+    if(!request) {
+        throw new Error("Not found!");
+    }
+    if(request.senderId !== userId) {
+        throw new Error("Not authorized");
+    }
+    if(request.status !== "PENDING") {
+        throw new Error("Request is not pending");
+    }
+    const deletedRequest = await prisma.friendRequest.delete({
+        where: {
+            id: requestId
+        }
+    })
+    return deletedRequest;
+}
+
+const incomingFriendRequests = async (userId) => {
+    const requests = await prisma.friendRequest.findMany({
+        where: {
+            recipientId: userId,
+            status: "PENDING"
+        }
+    })
+
+    if(!requests) {
+        throw new Error("No incoming friend requests");
+    }
+    return requests;
+}
+
+const outgoingFriendRequests = async (userId) => {
+    const requests = await prisma.friendRequest.findMany({
+        where: {
+            senderId: userId,
+            status: "PENDING"
+        }
+    })
+
+    if(!requests) {
+        throw new Error("No outgoing friend requests");
+    }
+    return requests;
+}
+
 export {
     sendFriendRequest,
-    acceptFriendRequest
+    acceptFriendRequest,
+    rejectFriendRequest,
+    cancelFriendRequest,
+    incomingFriendRequests,
+    outgoingFriendRequests
 }

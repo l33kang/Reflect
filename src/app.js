@@ -5,6 +5,7 @@ import userRoutes from "./routes/userRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import feedbackRoutes from './routes/feedbackRoutes.js';
 import friendRequestRoutes from './routes/friendRequestRoutes.js';
+import friendshipRoutes from './routes/friendshipRoutes.js';
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/feedback", feedbackRoutes);
 app.use("/api/friend-request", friendRequestRoutes);
+app.use("/api/friendship", friendshipRoutes);
 
 app.get("/", (req, res) => {
     res.json({
