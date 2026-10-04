@@ -10,9 +10,9 @@ import {
 
 const sendFriendRequest = async (req, res) => {
     const senderId = req.user.userId;
-    const {recipientId} = req.body;
+    const recipientId = req.body?.recipientId;
 
-    if (!recipientId) {
+    if (typeof recipientId !== "string" || !recipientId.trim()) {
         return res.status(400).json({error: "Recipient ID is required"});
     }
 

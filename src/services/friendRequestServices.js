@@ -1,4 +1,5 @@
 import prisma from '../config/database.js'
+import { createNotification } from './notificationServices.js';
 
 const sendFriendRequest = async (senderId, recipientId) => {
     if(senderId === recipientId) {
@@ -66,6 +67,22 @@ const sendFriendRequest = async (senderId, recipientId) => {
     }
     });
 
+    const sender = await prisma.user.findUnique({
+        where: {
+            id: senderId
+        },
+        select: {
+            username: true
+        }
+    })
+
+    await createNotification({
+        userId: recipientId,
+        type: "FRIEND-REQUEST",
+        message: `You have a new friend request from ${sender.username}`
+    });
+
+
     return createFriendRequest;
 }
 
@@ -112,6 +129,21 @@ const acceptFriendRequest = async (requestId, userId) => {
             request: requestUpdate,
             friendship
         }
+    })
+
+    const recipient = await prisma.user.findUnique({
+        where: {
+            id: request.recipientId
+        },
+        select: {
+            username: true
+        }
+    })
+
+    await createNotification({
+        userId: request.senderId,
+        type: "FRIEND-REQUEST-ACCEPTED",
+        message: `${recipient.username} has accepted your friend request`
     })
 
     return result;

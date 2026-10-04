@@ -1,93 +1,106 @@
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "postgresql"
+  provider = "postgresql"
 }
+
 model User {
-    id             String   @id @default(uuid())
-    email          String   @unique
-    username       String   @unique
-    passwordHash   String
-    createdAt      DateTime @default(now())
-    updatedAt      DateTime @updatedAt
+  id           String   @id @default(uuid())
+  email        String   @unique
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-    profile        Profile?
-    privacySettings PrivacySettings?
+  profile         Profile?
+  privacySettings PrivacySettings?
 
-    feedbackGiven    Feedback[] @relation("FeedbackGiven")
-    feedbackReceived Feedback[] @relation("FeedbackReceived")
+  feedbackGiven    Feedback[] @relation("FeedbackGiven")
+  feedbackReceived Feedback[] @relation("FeedbackReceived")
 
-    friendRequestsSent      FriendRequest[] @relation("FriendRequestsSent")
-    friendRequestsReceived  FriendRequest[] @relation("FriendRequestsReceived")
+  friendRequestsSent     FriendRequest[] @relation("FriendRequestsSent")
+  friendRequestsReceived FriendRequest[] @relation("FriendRequestsReceived")
 
-    firstUser       Friendship[] @relation("FirstUser")
-    secondUser      Friendship[] @relation("SecondUser")
+  firstUser  Friendship[] @relation("FirstUser")
+  secondUser Friendship[] @relation("SecondUser")
 
+  notification Notification[] @relation("Recipient")
 }
 
 model Profile {
-    id        String   @id @default(uuid())
-    userId    String   @unique
-    firstName String?
-    lastName  String?
-    bio       String?
+  id        String  @id @default(uuid())
+  userId    String  @unique
+  firstName String?
+  lastName  String?
+  bio       String?
 
-    user      User     @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 }
 
 model PrivacySettings {
-    userId       String   @id 
-    allowAnonymousFeedback  Boolean @default(true)
-    allowFeedbackFrom       String @default("everyone")
-    discoverable              Boolean @default(true)
-    showFriendsList         Boolean @default(true)
-    showReputation           Boolean @default(true)
+  userId                 String  @id
+  allowAnonymousFeedback Boolean @default(true)
+  allowFeedbackFrom      String  @default("everyone")
+  discoverable           Boolean @default(true)
+  showFriendsList        Boolean @default(true)
+  showReputation         Boolean @default(true)
 
-    user        User   @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 }
 
 model Feedback {
-    id          String   @id @default(uuid())
-    fromUserId  String
-    toUserId    String
-    content     String
-    isPublic    Boolean  @default(false)
-    createdAt   DateTime @default(now())
+  id         String   @id @default(uuid())
+  fromUserId String
+  toUserId   String
+  content    String
+  isPublic   Boolean  @default(false)
+  createdAt  DateTime @default(now())
 
-    fromUser User @relation("FeedbackGiven", fields: [fromUserId], references: [id])
-    toUser   User @relation("FeedbackReceived", fields: [toUserId], references: [id])
+  fromUser User @relation("FeedbackGiven", fields: [fromUserId], references: [id])
+  toUser   User @relation("FeedbackReceived", fields: [toUserId], references: [id])
 }
 
 enum FriendRequestStatus {
-    PENDING
-    ACCEPTED
-    REJECTED
+  PENDING
+  ACCEPTED
+  REJECTED
 }
 
 model FriendRequest {
-    id          String                  @id @default(uuid())
-    senderId    String
-    recipientId String
-    status      FriendRequestStatus     @default(PENDING)
-    createdAt   DateTime                @default(now())
-    updatedAt   DateTime                @updatedAt
+  id          String              @id @default(uuid())
+  senderId    String
+  recipientId String
+  status      FriendRequestStatus @default(PENDING)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
 
-    sender    User @relation("FriendRequestsSent", fields: [senderId], references: [id])
-    recipient User @relation("FriendRequestsReceived", fields: [recipientId], references: [id])
+  sender    User @relation("FriendRequestsSent", fields: [senderId], references: [id])
+  recipient User @relation("FriendRequestsReceived", fields: [recipientId], references: [id])
 
-    @@unique([senderId, recipientId])
+  @@unique([senderId, recipientId])
 }
 
 model Friendship {
-    id        String   @id @default(uuid())
-    userAId   String
-    userBId   String
-    createdAt DateTime @default(now())
+  id        String   @id @default(uuid())
+  userAId   String
+  userBId   String
+  createdAt DateTime @default(now())
 
-    userA User @relation("FirstUser", fields: [userAId], references: [id])
-    userB User @relation("SecondUser", fields: [userBId], references: [id])
+  userA User @relation("FirstUser", fields: [userAId], references: [id])
+  userB User @relation("SecondUser", fields: [userBId], references: [id])
 
-    @@unique([userAId, userBId])
+  @@unique([userAId, userBId])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation("Recipient", fields: [userId], references: [id])
 }
