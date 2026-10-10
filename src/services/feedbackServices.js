@@ -16,14 +16,32 @@ const createFeedback = async ({fromUserId, toUserId, content}) => {
         throw new Error("User not found!");
     }
 
+    const privacy = await prisma.privacySettings.findUnique({
+        where: {
+            userId: toUserId
+        }
+    });
+
+    if(privacy.allowFeedbackFrom === "friends") {
+        const friendship = await prisma.friendship.findFirst({
+            where: {
+                OR: [
+                    {userAId: fromUserId, userBId: toUserId},
+                    {userAId: toUserId, userBId: fromUserId}
+                ]
+            }
+        })
+        if(!friendship) {
+            throw new Error("You are not allowed to make this feedback");
+        }
+    }
     const feedback = await prisma.feedback.create({
         data: {
             fromUserId,
             toUserId,
             content
-        }
-    })
-    
+            }
+        })
     return feedback;
 }
 

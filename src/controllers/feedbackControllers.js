@@ -21,9 +21,9 @@ const createFeedback = async (req, res) => {
         console.error(err);
         if(err.message === "You can't send a feedback to yourself!") {
             return res.status(400).json({error: "You can't send a feedback to yourself!"});
-        }
-
-        if(err.message === "User not found!") {
+        } else if(err.message === "You are not allowed to make this feedback") {
+            return res.status(400).json({error: "You are not allowed to make this feedback"})
+        } else if(err.message === "User not found!") {
             return res.status(404).json({error: "User not found!"});
         }
         return res.status(500).json({error: "Could not create Feedback"})
