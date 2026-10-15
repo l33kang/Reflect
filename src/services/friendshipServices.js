@@ -30,6 +30,27 @@ const getFriends = async (userId) => {
     return friends;
 }
 
+const getFriendsById = async (requesterId, targetUserId) => {
+    const targetUser = await prisma.user.findUnique({
+        where:{id: targetUserId},
+        select: {
+            id: true,
+            privacySettings: {
+                select: {
+                    showFriendsList: true,
+                }
+            }
+        }
+
+    })
+
+    if(!targetUser) throw new Error("User not found")
+    if(requesterId !== targetUserId && targetUser.privacySettings?.showFriendsList === false){
+        throw new Error("Friends list is private");
+    }
+    return await getFriends(targetUserId);
+}
+
 const unfriend = async (userId, friendId) => {
     const friendship = await prisma.friendship.findFirst({
         where: {
@@ -54,5 +75,6 @@ const unfriend = async (userId, friendId) => {
 
 export {
     getFriends,
+    getFriendsById,
     unfriend
 }

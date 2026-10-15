@@ -33,6 +33,13 @@ const createUser = async ( {email, username, password, firstName, lastName, bio}
 
 const getAllUsers = async () => {
     const users = await prisma.user.findMany({
+        where: {
+            privacySettings : {
+                is: {
+                    discoverable: true
+                }
+            }
+        },
         select: {
             username: true,
             email: true,
@@ -42,17 +49,33 @@ const getAllUsers = async () => {
     return users;
 }
 
-const getUserById = async (id) => {
+const getUserById = async (requesterId, targetUserId) => {
     const user = await prisma.user.findUnique({
         where: {
-            id
+            id: targetUserId
         },
         select: {
             email: true,
             username: true,
-            profile: true
+            profile: true,
+             privacySettings: {
+                select: {
+                    discoverable: true
+                }
+            }
         }
     })
+
+    if (!user) {
+    return null;
+    }
+
+    if (
+        requesterId !== targetUserId &&
+        user.privacySettings?.discoverable === false
+    ) {
+        return null;
+    }
     return user;
 }
 

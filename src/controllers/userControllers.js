@@ -39,10 +39,11 @@ const getUsers = async (req, res) => {
 }
 
 const getUserById = async (req, res) => {
-    const {id} = req.params;
+    const requesterId = req.user.userId;
+    const targetUserId = req.params.id;
 
     try {
-        const user = await getUserByIdService(id);
+        const user = await getUserByIdService(requesterId, targetUserId);
         if(!user) {
             return res.status(404).json({error: "Not found"});
         }
