@@ -6,16 +6,16 @@ import {
 } from '../services/feedbackServices.js';
 
 const createFeedback = async (req, res) => {
-    const {toUserId, content} = req.body;
+    const {toUserId, content, type, dimension} = req.body;
     const fromUserId = req.user.userId;
 
-    if ( !toUserId || typeof content !== "string" || !content.trim() || content.trim().length > 500) {
-    return res.status(400).json({error: "toUserId and valid feedback content are required"});
+    if ( !toUserId || typeof content !== "string" || !content.trim() || content.trim().length > 500 ||!type || !dimension) {
+    return res.status(400).json({error: "toUserId, type, dimension and valid feedback content are required"});
     }
     const clearContent = content.trim();
 
     try {
-        const feedback = await createFeedbackServices({fromUserId, toUserId, content: clearContent});
+        const feedback = await createFeedbackServices({fromUserId, toUserId, content: clearContent, type, dimension});
         return res.status(201).json(feedback);
     } catch(err) {
         console.error(err);
@@ -25,8 +25,15 @@ const createFeedback = async (req, res) => {
             return res.status(400).json({error: "You are not allowed to make this feedback"})
         } else if(err.message === "User not found!") {
             return res.status(404).json({error: "User not found!"});
+        } else if (
+            err.message === "Invalid type" ||
+            err.message === "Invalid dimension"
+        ) {
+            return res.status(400).json({ error: err.message });
+        } else {
+            return res.status(500).json({error: "Could not create Feedback"});
         }
-        return res.status(500).json({error: "Could not create Feedback"})
+        
     }
 
 }

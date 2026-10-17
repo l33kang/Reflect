@@ -7,6 +7,7 @@ import feedbackRoutes from './routes/feedbackRoutes.js';
 import friendRequestRoutes from './routes/friendRequestRoutes.js';
 import friendshipRoutes from './routes/friendshipRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
+import reputationRoutes from "./routes/reputationRoutes.js";
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use(express.json());
 
 app.use("/api/health", healthRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/users", reputationRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/feedback", feedbackRoutes);
 app.use("/api/friend-request", friendRequestRoutes);

@@ -1,7 +1,15 @@
 import prisma from '../config/database.js';
+import {createReputationEvent} from './reputationServices.js'
 
 
-const createFeedback = async ({fromUserId, toUserId, content}) => {
+const createFeedback = async ({
+    fromUserId,
+    toUserId,
+    content,
+    type,
+    dimension
+}) => {
+
     if(fromUserId === toUserId) {
         throw new Error ("You can't send a feedback to yourself!");
     }
@@ -35,13 +43,33 @@ const createFeedback = async ({fromUserId, toUserId, content}) => {
             throw new Error("You are not allowed to make this feedback");
         }
     }
-    const feedback = await prisma.feedback.create({
+
+    const reputationEvent = createReputationEvent(type, dimension);
+
+    const feedback = await prisma.$transaction(async (tx) => {
+        const feedback = await tx.feedback.create({
         data: {
             fromUserId,
             toUserId,
-            content
+            content,
+            type,
+            dimension
             }
-        })
+        });
+
+        if(reputationEvent){
+            await tx.reputationEvent.create({
+                data:{
+                    feedbackId: feedback.id,
+                    userId: toUserId,
+                    dimension: reputationEvent.dimension,
+                    scoreValue: reputationEvent.scoreValue,
+                    rawWeight: reputationEvent.rawWeight
+                }
+            });
+        }
+        return feedback;
+    });
     return feedback;
 }
 

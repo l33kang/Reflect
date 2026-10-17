@@ -27,6 +27,8 @@ model User {
   secondUser Friendship[] @relation("SecondUser")
 
   notification Notification[] @relation("Recipient")
+
+  reputationEvents ReputationEvent[]
 }
 
 model Profile {
@@ -50,6 +52,21 @@ model PrivacySettings {
   user User @relation(fields: [userId], references: [id])
 }
 
+enum FeedbackType {
+  APPRECIATION
+  CONSTRUCTIVE
+  ENCOURAGEMENT
+  APOLOGY
+  GRATITUDE
+}
+
+enum ReputationDimension {
+  KINDNESS
+  RESPECT
+  RELIABILITY
+  ACCOUNTABILITY
+}
+
 model Feedback {
   id         String   @id @default(uuid())
   fromUserId String
@@ -60,6 +77,25 @@ model Feedback {
 
   fromUser User @relation("FeedbackGiven", fields: [fromUserId], references: [id])
   toUser   User @relation("FeedbackReceived", fields: [toUserId], references: [id])
+
+  type      FeedbackType?
+  dimension ReputationDimension?
+
+  reputationEvent ReputationEvent?
+}
+
+model ReputationEvent {
+  id                String              @id @default(uuid())
+  feedbackId        String              @unique
+  userId            String
+  dimension         ReputationDimension
+  scoreValue        Float
+  rawWeight         Float
+  senderTrustAtTime Float               @default(0.5)
+  createdAt         DateTime            @default(now())
+
+  feedback Feedback @relation(fields: [feedbackId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
 }
 
 enum FriendRequestStatus {
