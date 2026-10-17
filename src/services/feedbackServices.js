@@ -64,7 +64,8 @@ const createFeedback = async ({
                     userId: toUserId,
                     dimension: reputationEvent.dimension,
                     scoreValue: reputationEvent.scoreValue,
-                    rawWeight: reputationEvent.rawWeight
+                    rawWeight: reputationEvent.rawWeight,
+                    senderTrustAtTime: 0.5
                 }
             });
         }

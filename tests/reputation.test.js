@@ -63,3 +63,24 @@ test("accepts a score of 5", () => {
         reputation([{ scoreValue: 5, rawWeight: 1 }])
     );
 });
+
+
+test("lower sender trust reduces the influence of an event", () => {
+    const trustedResult = reputation([
+        { scoreValue: 5, rawWeight: 1, senderTrustAtTime: 1 }
+    ]);
+
+    const lessTrustedResult = reputation([
+        { scoreValue: 5, rawWeight: 1, senderTrustAtTime: 0.5 }
+    ]);
+
+    assert.ok(lessTrustedResult < trustedResult);
+});
+
+test("sender trust of 0.5 gives an event half its raw weight", () => {
+    const result = reputation([
+        { scoreValue: 5, rawWeight: 1, senderTrustAtTime: 0.5 }
+    ]);
+
+    assert.ok(Math.abs(result - 3.5882352941) < 0.000001);
+});

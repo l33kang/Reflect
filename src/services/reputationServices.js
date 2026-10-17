@@ -26,8 +26,11 @@ const reputation = (events) => {
             throw new Error("Invalid reputation event");
         }
 
-        weightedTotal += event.scoreValue * event.rawWeight;
-        totalWeight += event.rawWeight;
+        const trust = event.senderTrustAtTime ?? 1.0;
+        const effectiveWeight = event.rawWeight * trust;
+
+        weightedTotal += event.scoreValue * effectiveWeight;
+        totalWeight += effectiveWeight;
     }
 
     return weightedTotal / totalWeight;
@@ -76,7 +79,8 @@ const getReputationEvents = async (userId, dimension) => {
         },
         select: {
             scoreValue: true,
-            rawWeight: true
+            rawWeight: true,
+            senderTrustAtTime: true
         }
     });
 };
