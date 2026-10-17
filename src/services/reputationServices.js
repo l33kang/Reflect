@@ -1,8 +1,9 @@
+
 import prisma from '../config/database.js';
 
 const reputation = (events) => {
-    if(!Array.isArray(events)){
-        throw new Error("Events must be an array")
+    if (!Array.isArray(events)) {
+        throw new Error("Events must be an array");
     }
 
     const baseline = 3.5;
@@ -11,38 +12,35 @@ const reputation = (events) => {
     let weightedTotal = baseline * priorStrength;
     let totalWeight = priorStrength;
 
-    for(const event of events){
-        if(
+    for (const event of events) {
+        if (
             !event ||
             typeof event !== "object" ||
             Array.isArray(event) ||
+            !Number.isFinite(event.scoreValue) ||
             event.scoreValue < 0 ||
             event.scoreValue > 5 ||
-            !Number.isFinite(event.scoreValue) ||
-            !Number.isFinite(event.rawWeight)||
+            !Number.isFinite(event.rawWeight) ||
             event.rawWeight < 0
-         ){
-            throw new Error("Invalid reputation event")
+        ) {
+            throw new Error("Invalid reputation event");
         }
+
         weightedTotal += event.scoreValue * event.rawWeight;
         totalWeight += event.rawWeight;
     }
 
-    const score = weightedTotal/totalWeight;
-    return score;
-}
+    return weightedTotal / totalWeight;
+};
 
- 
-  
 const createReputationEvent = (type, dimension) => {
-
     const allowedTypes = [
         "APPRECIATION",
         "CONSTRUCTIVE",
         "ENCOURAGEMENT",
         "APOLOGY",
         "GRATITUDE"
-    ]
+    ];
 
     if (!allowedTypes.includes(type)) {
         throw new Error("Invalid type");
@@ -53,25 +51,25 @@ const createReputationEvent = (type, dimension) => {
         "RESPECT",
         "RELIABILITY",
         "ACCOUNTABILITY"
-    ]
+    ];
 
     if (!allowedDimensions.includes(dimension)) {
         throw new Error("Invalid dimension");
     }
 
-    if(type === "CONSTRUCTIVE" || type === "APOLOGY" ) {
+    if (type === "CONSTRUCTIVE" || type === "APOLOGY") {
         return null;
-    } else {
-        return {
-            dimension,
-            scoreValue: 4.0,
-            rawWeight: 1.0
-        }
     }
-}
+
+    return {
+        dimension,
+        scoreValue: 4.0,
+        rawWeight: 1.0
+    };
+};
 
 const getReputationEvents = async (userId, dimension) => {
-    const events = await prisma.reputationEvent.findMany({
+    return prisma.reputationEvent.findMany({
         where: {
             userId,
             dimension
@@ -81,7 +79,6 @@ const getReputationEvents = async (userId, dimension) => {
             rawWeight: true
         }
     });
-    return events;
 };
 
 const getDimensionReputation = async (userId, dimension) => {
@@ -105,14 +102,11 @@ const getDimensionReputation = async (userId, dimension) => {
         score: Number(score.toFixed(2)),
         qualifyingEvents: qualifyingEvents.length
     };
-
-}
+};
 
 const getUserReputation = async (username, requesterId) => {
     const user = await prisma.user.findUnique({
-        where: {
-            username
-        },
+        where: { username },
         select: {
             id: true,
             username: true,
@@ -124,11 +118,11 @@ const getUserReputation = async (username, requesterId) => {
         }
     });
 
-    if(!user) {
+    if (!user) {
         throw new Error("User not found");
     }
 
-    if(
+    if (
         user.id !== requesterId &&
         !user.privacySettings?.showReputation
     ) {
@@ -145,17 +139,15 @@ const getUserReputation = async (username, requesterId) => {
     const reputationByDimension = {};
 
     for (const dimension of dimensions) {
-        const result = await getDimensionReputation(user.id, dimension);
-
-        reputationByDimension[dimension] = result;
+        reputationByDimension[dimension] =
+            await getDimensionReputation(user.id, dimension);
     }
 
     return {
         username: user.username,
         reputation: reputationByDimension
-    }
-
-}
+    };
+};
 
 export {
     reputation,
