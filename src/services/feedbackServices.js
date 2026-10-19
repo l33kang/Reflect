@@ -159,9 +159,74 @@ const deleteFeedback = async (feedbackId, requesterId) => {
     return deletedFeedback;
 }
 
+const createFeedbackResponse = async ({
+    feedbackId,
+    responderId,
+    responseType,
+    body
+}) => {
+    const feedback = await prisma.feedback.findUnique({
+        where: {
+            id: feedbackId
+        }, 
+        select : {
+            id: true,
+            toUserId: true
+        }
+    });
+
+    if(!feedback) {
+        throw new Error("Not found!");
+    }
+
+    if(feedback.toUserId !== responderId) {
+        throw new Error("Not authorized");
+    }
+
+    const response = await prisma.feedbackResponse.create({
+        data: {
+            feedbackId,
+            responderId,
+            responseType,
+            body
+        }
+    });
+
+    return response;
+}
+
+const getFeedbackResponses = async (feedbackId, requesterId) => {
+    const feedback = await prisma.feedback.findUnique({
+        where: {
+            id: feedbackId
+        }
+    });
+
+    if(!feedback) {
+        throw new Error("Feedback not found!");
+    }
+
+    if(
+        feedback.fromUserId !== requesterId &&
+        feedback.toUserId !== requesterId
+    ) {
+        throw new Error("Not authorized!");
+    }
+
+    const respond = await prisma.feedbackResponse.findMany({
+        where: {
+            feedbackId: feedbackId
+        }
+    })
+
+    return respond;
+}
+
 export {
     createFeedback,
     getFeedbackForUser,
     updateFeedbackVisibility,
-    deleteFeedback
+    deleteFeedback,
+    createFeedbackResponse,
+    getFeedbackResponses
 }

@@ -2,7 +2,9 @@ import {
     createFeedback as createFeedbackServices,
     getFeedbackForUser as getFeedbackForUserServices,
     updateFeedbackVisibility as updateFeedbackVisibilityServices,
-    deleteFeedback as deleteFeedbackServices
+    deleteFeedback as deleteFeedbackServices,
+    createFeedbackResponse as createFeedbackResponseServices,
+    getFeedbackResponses as getFeedbackResponseServices
 } from '../services/feedbackServices.js';
 
 const createFeedback = async (req, res) => {
@@ -90,9 +92,76 @@ const deleteFeedback = async (req, res) => {
     }
 }
 
+const createFeedbackResponse = async (req, res) => {
+    const {feedbackId} = req.params;
+    const {responseType, body} = req.body;
+    const responderId = req.user.userId;
+
+    const allowedTypes = [
+        "UNDERSTAND",
+        "DISAGREE",
+        "DISCUSS",
+        "SORRY",
+        "CHANGED",
+        "INACCURATE",
+        "REVIEW_REQUEST"
+    ];
+
+    if(!allowedTypes.includes(responseType)){
+        return res.status(400).json({error: "Invalid response type"});
+    }
+
+    if(
+        body !== undefined &&
+        (typeof body !== "string" || body.trim().length > 500)
+    ) {
+        return res.status(400).json({error: "Response body must be a string of at most 500 characters"});
+    }
+
+    try{
+        const response = await createFeedbackResponseServices({
+            feedbackId,
+            responderId,
+            responseType,
+            body: body?.trim() || null
+        });
+
+        return res.status(201).json(response);
+    } catch(err) {
+        if(err.message === "Not found!") {
+            return res.status(404).json({error: "Feedback Not Found!"});
+        } else if(err.message === "Not authorized") {
+            return res.status(403).json({error: "Not authorized for this action"});
+        } else {
+            console.log(err.message)
+            return res.status(500).json({error: "Something went wrong"});
+        }
+    }
+}
+
+const getFeedbackResponse = async (req, res) => {
+    const {feedbackId} = req.params;
+    const requesterId = req.user.userId;
+    
+    try{
+        const response = await getFeedbackResponseServices(feedbackId, requesterId);
+        return res.status(200).json(response);
+    } catch(err) {
+        if(err.message === "Feedback not found!"){
+            return res.status(404).json({error: "Feedback not found!"});
+        } else if (err.message === "Not authorized!"){
+            return res.status(403).json({error: "Not authorized for this action"});
+        } else {
+            return res.status(500).json({error: "Something went went wrong"});
+        }
+    }
+}
+
 export {
     createFeedback,
     getFeedbackForUser,
     updateFeedbackVisibility,
-    deleteFeedback
+    deleteFeedback,
+    createFeedbackResponse,
+    getFeedbackResponse
 }

@@ -28,7 +28,8 @@ model User {
 
   notification Notification[] @relation("Recipient")
 
-  reputationEvents ReputationEvent[]
+  reputationEvents  ReputationEvent[]
+  feedbackResponses FeedbackResponse[]
 }
 
 model Profile {
@@ -67,6 +68,16 @@ enum ReputationDimension {
   ACCOUNTABILITY
 }
 
+enum FeedbackResponseType {
+  UNDERSTAND
+  DISAGREE
+  DISCUSS
+  SORRY
+  CHANGED
+  INACCURATE
+  REVIEW_REQUEST
+}
+
 model Feedback {
   id         String   @id @default(uuid())
   fromUserId String
@@ -82,6 +93,8 @@ model Feedback {
   dimension ReputationDimension?
 
   reputationEvent ReputationEvent?
+
+  responses FeedbackResponse[]
 }
 
 model ReputationEvent {
@@ -139,4 +152,16 @@ model Notification {
   createdAt DateTime @default(now())
 
   user User @relation("Recipient", fields: [userId], references: [id])
+}
+
+model FeedbackResponse {
+  id           String               @id @default(uuid())
+  feedbackId   String
+  responderId  String
+  responseType FeedbackResponseType
+  body         String?
+  createdAt    DateTime             @default(now())
+
+  feedback  Feedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+  responder User     @relation(fields: [responderId], references: [id])
 }
