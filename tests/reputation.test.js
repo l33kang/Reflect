@@ -84,3 +84,26 @@ test("sender trust of 0.5 gives an event half its raw weight", () => {
 
     assert.ok(Math.abs(result - 3.5882352941) < 0.000001);
 });
+
+test("older events have less influence on reputation", () => {
+    const now = new Date("2026-10-19T00:00:00Z");
+
+    const recentEvent = {
+        scoreValue: 5,
+        rawWeight: 1,
+        senderTrustAtTime: 1,
+        createdAt: now
+    };
+
+    const oldEvent = {
+        scoreValue: 5,
+        rawWeight: 1,
+        senderTrustAtTime: 1,
+        createdAt: new Date("2024-10-19T00:00:00Z")
+    };
+
+    const recentScore = reputation([recentEvent]);
+    const oldScore = reputation([oldEvent]);
+
+    assert.ok(recentScore > oldScore);
+});

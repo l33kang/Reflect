@@ -1,6 +1,26 @@
 
 import prisma from '../config/database.js';
 
+const calculateTimeDecay = (createdAt, now = new Date ()) => {
+    const eventTime = new Date(createdAt);
+
+    if(
+        Number.isNaN(eventTime.getTime()) ||
+        Number.isNaN(now.getTime())
+    ) {
+        throw new Error("Invalid event date");
+    }
+
+    const ageInDays = Math.max(
+        0,
+        (now.getTime() - eventTime.getTime()) / (1000*60*60*24)
+    );
+
+    const halfLifeDays = 365.25;
+    
+    return Math.pow(2, -ageInDays / halfLifeDays);
+}
+
 const reputation = (events) => {
     if (!Array.isArray(events)) {
         throw new Error("Events must be an array");
@@ -27,7 +47,9 @@ const reputation = (events) => {
         }
 
         const trust = event.senderTrustAtTime ?? 1.0;
-        const effectiveWeight = event.rawWeight * trust;
+        const timeWeight = event.createdAt? calculateTimeDecay(event.createdAt): 1.0;
+
+        const effectiveWeight = event.rawWeight * trust * timeWeight;
 
         weightedTotal += event.scoreValue * effectiveWeight;
         totalWeight += effectiveWeight;
@@ -80,7 +102,8 @@ const getReputationEvents = async (userId, dimension) => {
         select: {
             scoreValue: true,
             rawWeight: true,
-            senderTrustAtTime: true
+            senderTrustAtTime: true,
+            createdAt: true
         }
     });
 };
@@ -158,5 +181,6 @@ export {
     createReputationEvent,
     getReputationEvents,
     getDimensionReputation,
-    getUserReputation
+    getUserReputation,
+    calculateTimeDecay
 };
