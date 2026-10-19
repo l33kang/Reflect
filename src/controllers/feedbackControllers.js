@@ -55,13 +55,13 @@ const getFeedbackForUser = async (req, res) =>{
 const updateFeedbackVisibility = async (req, res) => {
     const {feedbackId} = req.params;
     const requesterId =  req.user.userId;
-    const {isPublic} = req.body;
+    const {visibility} = req.body ?? {};
 
-    if (typeof(isPublic) != 'boolean') {
+    if (!["PRIVATE", "PUBLIC"].includes(visibility)) {
         return res.status(400).json({error: 'Bad request!'});
     }
     try{
-        const updatedFeedback = await updateFeedbackVisibilityServices(feedbackId, requesterId, isPublic);
+        const updatedFeedback = await updateFeedbackVisibilityServices(feedbackId, requesterId, visibility);
         return res.status(200).json(updatedFeedback);
     } catch (err) {
         if(err.message === "Not found!") {
@@ -69,6 +69,7 @@ const updateFeedbackVisibility = async (req, res) => {
         } else if(err.message === "Not authorized") {
             return res.status(403).json({error: "Not authorized"});
         } else {
+            console.log(err.message);
             return res.status(500).json({error: "Something went wrong"});
         }
     }

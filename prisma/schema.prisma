@@ -78,12 +78,17 @@ enum FeedbackResponseType {
   REVIEW_REQUEST
 }
 
+enum FeedbackVisibility {
+  PRIVATE
+  PUBLIC
+}
+
 model Feedback {
   id         String   @id @default(uuid())
   fromUserId String
   toUserId   String
   content    String
-  isPublic   Boolean  @default(false)
+  visibility FeedbackVisibility  @default(PRIVATE)
   createdAt  DateTime @default(now())
 
   fromUser User @relation("FeedbackGiven", fields: [fromUserId], references: [id])

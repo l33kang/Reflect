@@ -85,7 +85,7 @@ const getFeedbackForUser = async (requesterId, targetUserId) => {
             id: true,
             content: true,
             createdAt: true,
-            isPublic: true
+            visibility: true
         }
     })
         return feedbacks;
@@ -93,13 +93,13 @@ const getFeedbackForUser = async (requesterId, targetUserId) => {
         const feedbacks = await prisma.feedback.findMany({
             where: {
                 toUserId: targetUserId,
-                isPublic: true
+                visibility: "PUBLIC"
             },
             select: {
                 id: true,
                 content: true,
                 createdAt: true,
-                isPublic: true
+                visibility: true
             }
         });
         return feedbacks;
@@ -108,7 +108,7 @@ const getFeedbackForUser = async (requesterId, targetUserId) => {
     
 }
 
-const updateFeedbackVisibility = async (feedbackId, requesterId, isPublic) => {
+const updateFeedbackVisibility = async (feedbackId, requesterId, visibility) => {
     const feedback = await prisma.feedback.findUnique({
         where: {
             id: feedbackId
@@ -128,7 +128,7 @@ const updateFeedbackVisibility = async (feedbackId, requesterId, isPublic) => {
             id: feedbackId
         },
         data: {
-            isPublic
+            visibility
         }
     });
     
