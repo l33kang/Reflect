@@ -5,8 +5,9 @@ import {
     updateFeedbackVisibility,
     deleteFeedback,
     createFeedbackResponse,
-    getFeedbackResponse
+    getFeedbackResponse,
  } from '../controllers/feedbackControllers.js'
+ import { createReport } from '../controllers/safetyReportController.js';
 import authMiddleware  from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -28,5 +29,8 @@ router.post('/:feedbackId/responses', authMiddleware, createFeedbackResponse);
 
 // Get Response by Id
 router.get('/:feedbackId/responses', authMiddleware, getFeedbackResponse );
+
+// Create report
+router.post('/:feedbackId/reports', authMiddleware, createReport );
 
 export default router;

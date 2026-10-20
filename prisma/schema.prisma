@@ -30,6 +30,8 @@ model User {
 
   reputationEvents  ReputationEvent[]
   feedbackResponses FeedbackResponse[]
+
+  safetyReportsCreated SafetyReport[] @relation("SafetyReportsCreated")
 }
 
 model Profile {
@@ -83,13 +85,20 @@ enum FeedbackVisibility {
   PUBLIC
 }
 
+enum SafetyReportStatus {
+  PENDING
+  UNDER_REVIEW
+  RESOLVED
+  DISMISSED
+}
+
 model Feedback {
-  id         String   @id @default(uuid())
+  id         String             @id @default(uuid())
   fromUserId String
   toUserId   String
   content    String
-  visibility FeedbackVisibility  @default(PRIVATE)
-  createdAt  DateTime @default(now())
+  visibility FeedbackVisibility @default(PRIVATE)
+  createdAt  DateTime           @default(now())
 
   fromUser User @relation("FeedbackGiven", fields: [fromUserId], references: [id])
   toUser   User @relation("FeedbackReceived", fields: [toUserId], references: [id])
@@ -100,6 +109,8 @@ model Feedback {
   reputationEvent ReputationEvent?
 
   responses FeedbackResponse[]
+
+  safetyReports SafetyReport[]
 }
 
 model ReputationEvent {
@@ -169,4 +180,20 @@ model FeedbackResponse {
 
   feedback  Feedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
   responder User     @relation(fields: [responderId], references: [id])
+}
+
+model SafetyReport {
+  id         String             @id @default(uuid())
+  feedbackId String
+  reporterId String
+  reason     String
+  status     SafetyReportStatus @default(PENDING)
+  createdAt  DateTime           @default(now())
+
+  feedback Feedback @relation(fields: [feedbackId], references: [id], onDelete: Restrict)
+
+  reporter User @relation("SafetyReportsCreated", fields: [reporterId], references: [id], onDelete: Restrict)
+
+  @@unique([feedbackId, reporterId])
+  @@index([status, createdAt])
 }
