@@ -39,6 +39,36 @@ const createReport = async (feedbackId, reporterId, reason) => {
     return report;
 }
 
+const getPendingReports = async () => {
+    const reports = await prisma.safetyReport.findMany({
+        where: {
+            status: 'PENDING'
+        },
+        orderBy: {
+            createdAt: "asc"
+        },
+        include: {
+            feedback: {
+                select: {
+                    id: true,
+                    content: true,
+                    fromUserId: true,
+                    toUserId: true,
+                    createdAt: true
+                }
+            },
+            reporter: {
+                select: {
+                    id: true,
+                    username: true
+                }
+            }
+        }
+    })
+    return reports;
+}
+
 export {
-    createReport
+    createReport,
+    getPendingReports
 }

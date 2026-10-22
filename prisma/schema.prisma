@@ -32,6 +32,8 @@ model User {
   feedbackResponses FeedbackResponse[]
 
   safetyReportsCreated SafetyReport[] @relation("SafetyReportsCreated")
+
+  role UserRole @default(USER)
 }
 
 model Profile {
@@ -90,6 +92,11 @@ enum SafetyReportStatus {
   UNDER_REVIEW
   RESOLVED
   DISMISSED
+}
+
+enum UserRole {
+  USER
+  MODERATOR
 }
 
 model Feedback {
