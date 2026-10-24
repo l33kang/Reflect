@@ -68,7 +68,107 @@ const getPendingReports = async () => {
     return reports;
 }
 
+
+const updateReportStatus = async (
+    reportId,
+    newStatus,
+    moderatorId,
+    explanation
+) => {
+    if (
+        explanation !== undefined &&
+        explanation !== null &&
+        typeof explanation !== "string"
+    ) {
+        throw new Error("Explanation must be a string");
+    }
+    
+    return await prisma.$transaction(async (tx) => {
+       
+        const report = await tx.safetyReport.findUnique({
+            where: { id: reportId }
+        });
+
+        if (!report) {
+            throw new Error("Report not found");
+        }
+
+        
+        if (
+            report.status !== "PENDING" &&
+            report.status !== "UNDER_REVIEW"
+        ) {
+            throw new Error("Report cannot be updated from its current status");
+        }
+
+        if (
+            report.status === "PENDING" &&
+            newStatus !== "UNDER_REVIEW"
+        ) {
+            throw new Error(
+                "Pending reports must be moved to UNDER_REVIEW first"
+            );
+        }
+
+        if (
+            report.status === "UNDER_REVIEW" &&
+            newStatus !== "RESOLVED" &&
+            newStatus !== "DISMISSED"
+        ) {
+            throw new Error(
+                "Under-review reports must be RESOLVED or DISMISSED"
+            );
+        }
+
+        
+        const updatedReport = await tx.safetyReport.update({
+            where: { id: reportId },
+            data: { status: newStatus }
+        });
+
+        await tx.safetyReportAction.create({
+            data: {
+                reportId,
+                moderatorId,
+                previousStatus: report.status,
+                newStatus,
+                explanation: explanation?.trim() || null
+            }
+        });
+
+        return updatedReport;
+    });
+};
+
+const getReportHistory = async (reportId) => {
+    const report = await prisma.safetyReport.findUnique({
+        where: { id: reportId },
+        select: { id: true }
+    });
+
+    if (!report) {
+        throw new Error("Report not found");
+    }
+
+    const history = await prisma.safetyReportAction.findMany({
+        where: { reportId },
+        orderBy: { createdAt: "asc" },
+        include: {
+            moderator: {
+                select: {
+                    id: true,
+                    username: true
+                }
+            }
+        }
+    });
+
+    return history;
+};
+
 export {
     createReport,
-    getPendingReports
+    getPendingReports,
+    updateReportStatus,
+     getReportHistory
 }

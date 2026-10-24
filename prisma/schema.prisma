@@ -33,7 +33,8 @@ model User {
 
   safetyReportsCreated SafetyReport[] @relation("SafetyReportsCreated")
 
-  role UserRole @default(USER)
+  role                UserRole             @default(USER)
+  safetyReportActions SafetyReportAction[]
 }
 
 model Profile {
@@ -201,6 +202,24 @@ model SafetyReport {
 
   reporter User @relation("SafetyReportsCreated", fields: [reporterId], references: [id], onDelete: Restrict)
 
+  actions SafetyReportAction[]
+
   @@unique([feedbackId, reporterId])
   @@index([status, createdAt])
+}
+
+model SafetyReportAction {
+  id             String             @id @default(uuid())
+  reportId       String
+  moderatorId    String
+  previousStatus SafetyReportStatus
+  newStatus      SafetyReportStatus
+  explanation    String?
+  createdAt      DateTime           @default(now())
+
+  report    SafetyReport @relation(fields: [reportId], references: [id], onDelete: Restrict)
+  moderator User         @relation(fields: [moderatorId], references: [id], onDelete: Restrict)
+
+  @@index([reportId, createdAt])
+  @@index([moderatorId, createdAt])
 }
