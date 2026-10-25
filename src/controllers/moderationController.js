@@ -1,7 +1,8 @@
 import { 
     getPendingReports as getPendingReportsServices,
     updateReportStatus as updateReportStatusServices,
-    getReportHistory as getReportHistoryServices
+    getReportHistory as getReportHistoryServices,
+    hideReportedFeedback as hideReportedFeedbackServices
     } from "../services/safetyReportServices.js";
 
 const getPendingReports = async (req, res) => {
@@ -92,8 +93,47 @@ const getReportHistory = async (req, res) => {
     }
 };
 
+const hideReportedFeedback = async (req, res) => {
+    const { reportId } = req.params;
+    const moderatorId = req.user.userId;
+
+    if (!reportId) {
+        return res.status(400).json({
+            error: "Report ID is required"
+        });
+    }
+
+    try {
+        const report = await hideReportedFeedbackServices(
+            reportId,
+            moderatorId
+        );
+
+        return res.status(200).json({
+            message: "Feedback hidden and report resolved",
+            report
+        });
+    } catch (err) {
+        if (err.message === "Report not found") {
+            return res.status(404).json({ error: err.message });
+        }
+
+        if (
+            err.message ===
+            "The report must be under review before feedback can be hidden"
+        ) {
+            return res.status(400).json({ error: err.message });
+        }
+
+        return res.status(500).json({
+            error: "Something went wrong"
+        });
+    }
+};
+
 export {
     getPendingReports,
     updateReportStatus,
-    getReportHistory
+    getReportHistory,
+    hideReportedFeedback
 }

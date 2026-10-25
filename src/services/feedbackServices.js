@@ -93,7 +93,8 @@ const getFeedbackForUser = async (requesterId, targetUserId) => {
         const feedbacks = await prisma.feedback.findMany({
             where: {
                 toUserId: targetUserId,
-                visibility: "PUBLIC"
+                visibility: "PUBLIC",
+                isHidden: false
             },
             select: {
                 id: true,

@@ -105,6 +105,7 @@ model Feedback {
   fromUserId String
   toUserId   String
   content    String
+  isHidden   Boolean            @default(false)
   visibility FeedbackVisibility @default(PRIVATE)
   createdAt  DateTime           @default(now())
 

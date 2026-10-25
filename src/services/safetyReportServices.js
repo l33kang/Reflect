@@ -180,13 +180,61 @@ const getReportHistory = async (reportId) => {
             }
         }
     });
-
     return history;
+};
+
+const hideReportedFeedback = async (reportId, moderatorId) => {
+    return await prisma.$transaction(async (tx) => {
+        const report = await tx.safetyReport.findUnique({
+            where: { id: reportId }
+        });
+
+        if (!report) {
+            throw new Error("Report not found");
+        }
+
+        if (report.status !== "UNDER_REVIEW") {
+            throw new Error(
+                "The report must be under review before feedback can be hidden"
+            );
+        }
+
+        await tx.feedback.update({
+            where: { id: report.feedbackId },
+            data: { isHidden: true }
+        });
+
+        const updatedReport = await tx.safetyReport.update({
+            where: { id: reportId },
+            data: { status: "RESOLVED" }
+        });
+
+        await tx.safetyReportAction.create({
+            data: {
+                reportId,
+                moderatorId,
+                previousStatus: "UNDER_REVIEW",
+                newStatus: "RESOLVED",
+                explanation: "Feedback hidden due to a moderation decision"
+            }
+        });
+
+        await tx.notification.create({
+            data: {
+                userId: report.reporterId,
+                type: "SAFETY_REPORT_UPDATE",
+                message: "Your report was reviewed, and the reported feedback was removed."
+            }
+        });
+
+        return updatedReport;
+    });
 };
 
 export {
     createReport,
     getPendingReports,
     updateReportStatus,
-     getReportHistory
+    getReportHistory,
+    hideReportedFeedback
 }
