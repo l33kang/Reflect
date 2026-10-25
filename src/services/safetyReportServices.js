@@ -136,6 +136,24 @@ const updateReportStatus = async (
             }
         });
 
+        let message;
+
+        if(newStatus === "UNDER_REVIEW") {
+            message = "Your safety report is now being reviewed."
+        } else if(newStatus === "RESOLVED"){
+            message = "Your safety report has been resolved."
+        } else if(newStatus === "DISMISSED") {
+            message = "Your safety report has been reviewed and dismissed."
+        }
+
+        await tx.notification.create({
+            data:{
+                userId: report.reporterId,
+                type: "SAFETY_REPORT_UPDATE",
+                message
+            }
+        })
+
         return updatedReport;
     });
 };

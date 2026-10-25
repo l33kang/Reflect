@@ -84,6 +84,54 @@ test(
                     },
                     body: JSON.stringify({ newStatus, explanation })
                 });
+            const assertSuccessfulTransition = async ({
+                report,
+                previousStatus,
+                newStatus,
+                explanation = null,
+                message,
+                notificationCount
+            }) => {
+                const updatedReport = await prisma.safetyReport.findUnique({
+                    where: { id: report.id }
+                });
+                assert.equal(updatedReport.status, newStatus);
+
+                const action = await prisma.safetyReportAction.findFirst({
+                    where: { reportId: report.id, newStatus },
+                    select: {
+                        moderatorId: true,
+                        previousStatus: true,
+                        newStatus: true,
+                        explanation: true
+                    }
+                });
+                assert.deepEqual(action, {
+                    moderatorId: moderator.id,
+                    previousStatus,
+                    newStatus,
+                    explanation
+                });
+
+                const notifications = await prisma.notification.findMany({
+                    where: {
+                        userId: report.reporterId,
+                        type: "SAFETY_REPORT_UPDATE"
+                    },
+                    select: {
+                        userId: true,
+                        type: true,
+                        message: true
+                    },
+                    orderBy: { createdAt: "desc" }
+                });
+                assert.equal(notifications.length, notificationCount);
+                assert.deepEqual(notifications[0], {
+                    userId: report.reporterId,
+                    type: "SAFETY_REPORT_UPDATE",
+                    message
+                });
+            };
 
             const pendingResponse = await fetch(
                 `${baseUrl}/api/moderation/pending`,
@@ -143,6 +191,14 @@ test(
             );
             assert.equal(reviewResponse.status, 200);
             assert.equal((await reviewResponse.json()).status, "UNDER_REVIEW");
+            await assertSuccessfulTransition({
+                report: resolvedReport,
+                previousStatus: "PENDING",
+                newStatus: "UNDER_REVIEW",
+                explanation: "reviewed with context",
+                message: "Your safety report is now being reviewed.",
+                notificationCount: 1
+            });
 
             const resolveResponse = await patchStatus(
                 resolvedReport.id,
@@ -152,6 +208,14 @@ test(
             );
             assert.equal(resolveResponse.status, 200);
             assert.equal((await resolveResponse.json()).status, "RESOLVED");
+            await assertSuccessfulTransition({
+                report: resolvedReport,
+                previousStatus: "UNDER_REVIEW",
+                newStatus: "RESOLVED",
+                explanation: "resolved after review",
+                message: "Your safety report has been resolved.",
+                notificationCount: 2
+            });
 
             const dismissReviewResponse = await patchStatus(
                 dismissedReport.id,
@@ -159,6 +223,17 @@ test(
                 moderator.id
             );
             assert.equal(dismissReviewResponse.status, 200);
+            assert.equal(
+                (await dismissReviewResponse.json()).status,
+                "UNDER_REVIEW"
+            );
+            await assertSuccessfulTransition({
+                report: dismissedReport,
+                previousStatus: "PENDING",
+                newStatus: "UNDER_REVIEW",
+                message: "Your safety report is now being reviewed.",
+                notificationCount: 3
+            });
 
             const dismissResponse = await patchStatus(
                 dismissedReport.id,
@@ -167,6 +242,13 @@ test(
             );
             assert.equal(dismissResponse.status, 200);
             assert.equal((await dismissResponse.json()).status, "DISMISSED");
+            await assertSuccessfulTransition({
+                report: dismissedReport,
+                previousStatus: "UNDER_REVIEW",
+                newStatus: "DISMISSED",
+                message: "Your safety report has been reviewed and dismissed.",
+                notificationCount: 4
+            });
 
             const resolvedActions = await prisma.safetyReportAction.findMany({
                 where: { reportId: resolvedReport.id },
@@ -240,6 +322,9 @@ test(
                 });
             }
             if (createdUserIds.length) {
+                await prisma.notification.deleteMany({
+                    where: { userId: { in: createdUserIds } }
+                });
                 await prisma.user.deleteMany({
                     where: { id: { in: createdUserIds } }
                 });
