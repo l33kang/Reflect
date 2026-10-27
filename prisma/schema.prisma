@@ -101,13 +101,15 @@ enum UserRole {
 }
 
 model Feedback {
-  id         String             @id @default(uuid())
-  fromUserId String
-  toUserId   String
-  content    String
-  isHidden   Boolean            @default(false)
-  visibility FeedbackVisibility @default(PRIVATE)
-  createdAt  DateTime           @default(now())
+  id                  String             @id @default(uuid())
+  fromUserId          String
+  toUserId            String
+  content             String
+  isAnonymous         Boolean            @default(true)
+  allowIdentityReveal Boolean            @default(false)
+  isHidden            Boolean            @default(false)
+  visibility          FeedbackVisibility @default(PRIVATE)
+  createdAt           DateTime           @default(now())
 
   fromUser User @relation("FeedbackGiven", fields: [fromUserId], references: [id])
   toUser   User @relation("FeedbackReceived", fields: [toUserId], references: [id])

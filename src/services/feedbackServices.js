@@ -7,7 +7,9 @@ const createFeedback = async ({
     toUserId,
     content,
     type,
-    dimension
+    dimension,
+    isAnonymous,
+    allowIdentityReveal
 }) => {
 
     if(fromUserId === toUserId) {
@@ -53,7 +55,9 @@ const createFeedback = async ({
             toUserId,
             content,
             type,
-            dimension
+            dimension,
+            isAnonymous,
+            allowIdentityReveal
             }
         });
 
@@ -107,6 +111,42 @@ const getFeedbackForUser = async (requesterId, targetUserId) => {
     }
 
     
+}
+
+const revealFeedbackIdentity = async (feedbackId, requesterId) => {
+    const feedback = await prisma.feedback.findUnique({
+        where: { id: feedbackId },
+        select: {
+            id: true,
+            toUserId: true,
+            fromUserId: true,
+            isAnonymous: true,
+            allowIdentityReveal: true,
+            fromUser: {
+                select: {
+                    id: true,
+                    username: true,
+                    profile: {
+                        select: {
+                            firstName: true,
+                            lastName: true
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    if(!feedback) {
+        throw new Error("Feedback not found!");
+    }
+    if(feedback.toUserId !== requesterId) {
+        throw new Error("Not authorized");
+    }
+    if(!feedback.allowIdentityReveal) {
+        throw new Error("Identity reveal not permitted");
+    }
+    return feedback.fromUser;
 }
 
 const updateFeedbackVisibility = async (feedbackId, requesterId, visibility) => {
@@ -229,5 +269,6 @@ export {
     updateFeedbackVisibility,
     deleteFeedback,
     createFeedbackResponse,
-    getFeedbackResponses
+    getFeedbackResponses,
+    revealFeedbackIdentity
 }

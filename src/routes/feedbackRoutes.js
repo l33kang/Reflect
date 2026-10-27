@@ -6,6 +6,7 @@ import {
     deleteFeedback,
     createFeedbackResponse,
     getFeedbackResponse,
+    revealFeedbackIdentity
  } from '../controllers/feedbackControllers.js'
  import { createReport } from '../controllers/safetyReportController.js';
 import authMiddleware  from '../middleware/authMiddleware.js';
@@ -32,5 +33,8 @@ router.get('/:feedbackId/responses', authMiddleware, getFeedbackResponse );
 
 // Create report
 router.post('/:feedbackId/reports', authMiddleware, createReport );
+
+//Reveal feedback Identity
+router.post('/:feedbackId/reveal-identity', authMiddleware, revealFeedbackIdentity);
 
 export default router;

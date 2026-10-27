@@ -4,7 +4,8 @@ import {
     updateFeedbackVisibility as updateFeedbackVisibilityServices,
     deleteFeedback as deleteFeedbackServices,
     createFeedbackResponse as createFeedbackResponseServices,
-    getFeedbackResponses as getFeedbackResponseServices
+    getFeedbackResponses as getFeedbackResponseServices,
+    revealFeedbackIdentity as revealFeedbackIdentityServices
 } from '../services/feedbackServices.js';
 
 const createFeedback = async (req, res) => {
@@ -15,6 +16,17 @@ const createFeedback = async (req, res) => {
     return res.status(400).json({error: "toUserId, type, dimension and valid feedback content are required"});
     }
     const clearContent = content.trim();
+
+    if(
+        typeof isAnonymous !== "boolean" ||
+        typeof allowIdentityReveal !== "boolean"
+    ) {
+        return res.status(400).json({error: "isAnonymous and allowIdentityReveal must be booleans"});
+    }
+
+    if(!isAnonymous && allowIdentityRevealveal) {
+        return res.status(400).json({error: "Identity reveal permission is only needed for anonymous feedback"});
+    }
 
     try {
         const feedback = await createFeedbackServices({fromUserId, toUserId, content: clearContent, type, dimension});
@@ -49,6 +61,31 @@ const getFeedbackForUser = async (req, res) =>{
     } catch (err){
          console.error(err);
         return res.status(500).json({error: "Could not fetch Feedbacks"});
+    }
+}
+
+const revealFeedbackIdentity = async (req, res) => {
+    const {feedbackId} = req.params;
+    const requesterId = req.user.userId;
+
+    try {
+        const identity = await revealFeedbackIdentityServices(feedbackId, requesterId);
+        return res.status(200).json({ identity });
+    } catch (err) {
+        if (err.message === "Feedback not found!") {
+            return res.status(404).json({ error: err.message });
+        }
+
+        if (err.message === "Not authorized") {
+            return res.status(403).json({ error: err.message });
+        }
+
+        if (err.message === "Identity reveal not permitted") {
+            return res.status(403).json({ error: err.message });
+        }
+
+        console.error(err);
+        return res.status(500).json({ error: "Could not reveal identity" });
     }
 }
 
@@ -164,5 +201,6 @@ export {
     updateFeedbackVisibility,
     deleteFeedback,
     createFeedbackResponse,
-    getFeedbackResponse
+    getFeedbackResponse,
+    revealFeedbackIdentity
 }
