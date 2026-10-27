@@ -10,11 +10,21 @@ import {
  } from '../controllers/feedbackControllers.js'
  import { createReport } from '../controllers/safetyReportController.js';
 import authMiddleware  from '../middleware/authMiddleware.js';
+import createRateLimiter from '../middleware/rateLimit.js';
 
 const router = express.Router();
 
 // create feedback
-router.post('/', authMiddleware, createFeedback);
+router.post(
+    '/',
+    authMiddleware,
+    createRateLimiter({
+        limit: 5,
+        windowSeconds: 60,
+        keyPrefix: 'rate-limit:feedback',
+    }),
+    createFeedback
+);
 
 //get user's feedbacks
 router.get('/:userId', authMiddleware, getFeedbackForUser);
