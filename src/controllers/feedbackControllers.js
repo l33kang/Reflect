@@ -9,7 +9,14 @@ import {
 } from '../services/feedbackServices.js';
 
 const createFeedback = async (req, res) => {
-    const {toUserId, content, type, dimension} = req.body;
+    const {
+        toUserId,
+        content,
+        type,
+        dimension,
+        isAnonymous,
+        allowIdentityReveal
+    } = req.body;
     const fromUserId = req.user.userId;
 
     if ( !toUserId || typeof content !== "string" || !content.trim() || content.trim().length > 500 ||!type || !dimension) {
@@ -24,12 +31,20 @@ const createFeedback = async (req, res) => {
         return res.status(400).json({error: "isAnonymous and allowIdentityReveal must be booleans"});
     }
 
-    if(!isAnonymous && allowIdentityRevealveal) {
+    if(!isAnonymous && allowIdentityReveal) {
         return res.status(400).json({error: "Identity reveal permission is only needed for anonymous feedback"});
     }
 
     try {
-        const feedback = await createFeedbackServices({fromUserId, toUserId, content: clearContent, type, dimension});
+        const feedback = await createFeedbackServices({
+            fromUserId,
+            toUserId,
+            content: clearContent,
+            type,
+            dimension,
+            isAnonymous,
+            allowIdentityReveal
+        });
         return res.status(201).json(feedback);
     } catch(err) {
         console.error(err);
@@ -44,6 +59,8 @@ const createFeedback = async (req, res) => {
             err.message === "Invalid dimension"
         ) {
             return res.status(400).json({ error: err.message });
+        } else if(err.message === "Interaction not allowed") {
+            return res.status(403).json({error: "Interaction not allowed"});
         } else {
             return res.status(500).json({error: "Could not create Feedback"});
         }

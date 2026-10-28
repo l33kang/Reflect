@@ -16,6 +16,19 @@ const createFeedback = async ({
         throw new Error ("You can't send a feedback to yourself!");
     }
 
+    const blockExists = await prisma.block.findFirst({
+        where: {
+            OR: [
+                {blockerId: fromUserId, blockedId: toUserId},
+                {blockerId: toUserId, blockedId: fromUserId}
+            ]
+        }
+    });
+
+    if(blockExists) {
+        throw new Error("Interaction not allowed");
+    }
+
     const recipient = await prisma.user.findUnique({
         where: {
             id: toUserId

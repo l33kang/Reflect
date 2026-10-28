@@ -30,7 +30,9 @@ const sendFriendRequest = async (req, res) => {
             return res.status(400).json({error: "Friend request already exists"});
         } else if (err.message === "You already have a friend request from this user") {
             return res.status(400).json({error: "You already have a friend request from this user"});
-        }else {
+        } else if(err.message === "Interaction not allowed") {
+            return res.status(403).json({error: "Interaction not allowed"});
+        } else {
             console.error(err);
             return res.status(500).json({error: "Could not send friend request"});
         }

@@ -3,8 +3,22 @@ import { createNotification } from './notificationServices.js';
 
 const sendFriendRequest = async (senderId, recipientId) => {
     if(senderId === recipientId) {
-        throw new Error("Not possible")
+        throw new Error("You cant send a friend request to yourself");
     }
+    
+    const blockExists = await prisma.block.findFirst({
+        where: {
+            OR: [
+                { blockerId: senderId, blockedId: recipientId },
+                { blockerId: recipientId, blockedId: senderId },
+            ],
+        },
+    });
+
+    if (blockExists) {
+        throw new Error("Interaction not allowed");
+    }
+
 
     const recipient = await prisma.user.findUnique({
         where: {
