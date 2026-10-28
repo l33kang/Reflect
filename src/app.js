@@ -9,6 +9,7 @@ import friendshipRoutes from './routes/friendshipRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import reputationRoutes from "./routes/reputationRoutes.js";
 import moderationRoutes from "./routes/moderationRoutes.js";
+import blockRoutes from "./routes/blockRoutes.js";
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use("/api/friend-request", friendRequestRoutes);
 app.use("/api/friendship", friendshipRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/moderation", moderationRoutes);
+app.use("/api/block", blockRoutes);
 
 app.get("/", (req, res) => {
     res.json({
