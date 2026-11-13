@@ -1,0 +1,412 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String        @id @default(uuid())
+  email        String        @unique
+  username     String        @unique
+  passwordHash String
+  status       AccountStatus @default(ACTIVE)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  profile         Profile?
+  privacySettings PrivacySettings?
+
+  feedbackGiven    Feedback[] @relation("FeedbackGiven")
+  feedbackReceived Feedback[] @relation("FeedbackReceived")
+
+  friendRequestsSent     FriendRequest[] @relation("FriendRequestsSent")
+  friendRequestsReceived FriendRequest[] @relation("FriendRequestsReceived")
+
+  firstUser  Friendship[] @relation("FirstUser")
+  secondUser Friendship[] @relation("SecondUser")
+
+  notification Notification[] @relation("Recipient")
+
+  posts             Post[]
+  postReactions     PostReaction[]
+  comments          Comment[]
+
+  reputationEvents  ReputationEvent[]
+  feedbackResponses FeedbackResponse[]
+
+  safetyReportsCreated SafetyReport[] @relation("SafetyReportsCreated")
+
+  role                UserRole             @default(USER)
+  safetyReportActions SafetyReportAction[]
+
+  blocks    Block[] @relation("UserBlocks")
+  blockedBy Block[] @relation("UserBlocked")
+
+  feedbackResolutions FeedbackResolution[]
+
+  bestFriends  BestFriend[] @relation("UserBestFriends")
+  bestFriendOf BestFriend[] @relation("BestFriendOf")
+
+  hobbies           UserHobby[]
+  moderationAppeals ModerationAppeal[]
+  moderationActions ModerationAction[]
+}
+
+model Profile {
+  id        String  @id @default(uuid())
+  userId    String  @unique
+  firstName String?
+  lastName  String?
+  bio       String?
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model PrivacySettings {
+  userId                 String  @id
+  allowAnonymousFeedback Boolean @default(true)
+  allowFeedbackFrom      String  @default("everyone")
+  discoverable           Boolean @default(true)
+  showFriendsList        Boolean @default(true)
+  showReputation         Boolean @default(true)
+  showBestFriends        Boolean @default(false)
+  showHobbies            Boolean @default(true)
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+enum FeedbackType {
+  APPRECIATION
+  CONSTRUCTIVE
+  ENCOURAGEMENT
+  APOLOGY
+  GRATITUDE
+}
+
+enum ReputationDimension {
+  KINDNESS
+  RESPECT
+  RELIABILITY
+  ACCOUNTABILITY
+}
+
+enum FeedbackResponseType {
+  UNDERSTAND
+  DISAGREE
+  DISCUSS
+  SORRY
+  CHANGED
+  INACCURATE
+  REVIEW_REQUEST
+}
+
+enum FeedbackVisibility {
+  PRIVATE
+  PUBLIC
+}
+
+enum SafetyReportStatus {
+  PENDING
+  UNDER_REVIEW
+  RESOLVED
+  DISMISSED
+}
+
+enum AppealStatus {
+  OPEN
+  UPHELD
+  OVERTURNED
+}
+
+enum AccountStatus {
+  ACTIVE
+  RESTRICTED
+  SUSPENDED
+  BANNED
+}
+
+enum UserRole {
+  USER
+  MODERATOR
+}
+
+enum ReactionType {
+  LIKE
+  LOVE
+  LAUGH
+  SAD
+  ANGRY
+}
+
+model Feedback {
+  id                  String             @id @default(uuid())
+  fromUserId          String
+  toUserId            String
+  content             String
+  isAnonymous         Boolean            @default(true)
+  allowIdentityReveal Boolean            @default(false)
+  isHidden            Boolean            @default(false)
+  visibility          FeedbackVisibility @default(PRIVATE)
+  createdAt           DateTime           @default(now())
+
+  fromUser User @relation("FeedbackGiven", fields: [fromUserId], references: [id])
+  toUser   User @relation("FeedbackReceived", fields: [toUserId], references: [id])
+
+  type      FeedbackType?
+  dimension ReputationDimension?
+
+  reputationEvent ReputationEvent?
+
+  responses FeedbackResponse[]
+
+  safetyReports SafetyReport[]
+
+  resolution FeedbackResolution?
+}
+
+model ReputationEvent {
+  id                String              @id @default(uuid())
+  feedbackId        String              @unique
+  userId            String
+  dimension         ReputationDimension
+  scoreValue        Float
+  rawWeight         Float
+  senderTrustAtTime Float               @default(0.5)
+  createdAt         DateTime            @default(now())
+
+  feedback Feedback @relation(fields: [feedbackId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
+}
+
+enum FriendRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model FriendRequest {
+  id          String              @id @default(uuid())
+  senderId    String
+  recipientId String
+  status      FriendRequestStatus @default(PENDING)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  sender    User @relation("FriendRequestsSent", fields: [senderId], references: [id])
+  recipient User @relation("FriendRequestsReceived", fields: [recipientId], references: [id])
+
+  @@unique([senderId, recipientId])
+}
+
+model Friendship {
+  id        String   @id @default(uuid())
+  userAId   String
+  userBId   String
+  createdAt DateTime @default(now())
+
+  userA User @relation("FirstUser", fields: [userAId], references: [id])
+  userB User @relation("SecondUser", fields: [userBId], references: [id])
+
+  @@unique([userAId, userBId])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation("Recipient", fields: [userId], references: [id])
+}
+
+model FeedbackResponse {
+  id           String               @id @default(uuid())
+  feedbackId   String
+  responderId  String
+  responseType FeedbackResponseType
+  body         String?
+  createdAt    DateTime             @default(now())
+
+  feedback  Feedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+  responder User     @relation(fields: [responderId], references: [id])
+}
+
+model SafetyReport {
+  id         String             @id @default(uuid())
+  feedbackId String
+  reporterId String
+  reason     String
+  status     SafetyReportStatus @default(PENDING)
+  createdAt  DateTime           @default(now())
+
+  feedback Feedback @relation(fields: [feedbackId], references: [id], onDelete: Restrict)
+
+  reporter User @relation("SafetyReportsCreated", fields: [reporterId], references: [id], onDelete: Restrict)
+
+  actions        SafetyReportAction[]
+  moderationCase ModerationCase?
+
+  @@unique([feedbackId, reporterId])
+  @@index([status, createdAt])
+}
+
+model SafetyReportAction {
+  id             String             @id @default(uuid())
+  reportId       String
+  moderatorId    String
+  previousStatus SafetyReportStatus
+  newStatus      SafetyReportStatus
+  explanation    String?
+  createdAt      DateTime           @default(now())
+
+  report    SafetyReport @relation(fields: [reportId], references: [id], onDelete: Restrict)
+  moderator User         @relation(fields: [moderatorId], references: [id], onDelete: Restrict)
+
+  @@index([reportId, createdAt])
+  @@index([moderatorId, createdAt])
+}
+
+model Block {
+  id        String   @id @default(cuid())
+  blockerId String
+  blockedId String
+  createdAt DateTime @default(now())
+
+  blocker User @relation("UserBlocks", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked User @relation("UserBlocked", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedId])
+  @@index([blockedId])
+}
+
+model FeedbackResolution {
+  id         String   @id @default(cuid())
+  feedbackId String   @unique
+  resolvedBy String
+  createdAt  DateTime @default(now())
+
+  feedback Feedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+  resolver User     @relation(fields: [resolvedBy], references: [id], onDelete: Cascade)
+}
+
+model BestFriend {
+  id        String   @id @default(cuid())
+  userId    String
+  friendId  String
+  createdAt DateTime @default(now())
+
+  user   User @relation("UserBestFriends", fields: [userId], references: [id], onDelete: Cascade)
+  friend User @relation("BestFriendOf", fields: [friendId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, friendId])
+  @@index([userId])
+}
+
+model Hobby {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+
+  users UserHobby[]
+}
+
+model UserHobby {
+  userId  String
+  hobbyId String
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hobby Hobby @relation(fields: [hobbyId], references: [id], onDelete: Cascade)
+
+  @@id([userId, hobbyId])
+  @@index([hobbyId])
+}
+
+model ModerationAppeal {
+  id         String       @id @default(cuid())
+  caseId     String
+  filedBy    String
+  statement  String
+  status     AppealStatus @default(OPEN)
+  createdAt  DateTime     @default(now())
+  resolvedAt DateTime?
+
+  moderationCase ModerationCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  appellant      User           @relation(fields: [filedBy], references: [id], onDelete: Cascade)
+
+  @@index([caseId])
+  @@index([filedBy])
+}
+
+model ModerationCase {
+  id        String   @id @default(cuid())
+  reportId  String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  report  SafetyReport       @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  actions ModerationAction[]
+  appeals ModerationAppeal[]
+}
+
+model ModerationAction {
+  id          String   @id @default(cuid())
+  caseId      String
+  moderatorId String
+  action      String
+  explanation String?
+  createdAt   DateTime @default(now())
+
+  moderationCase ModerationCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  moderator      User           @relation(fields: [moderatorId], references: [id], onDelete: Restrict)
+
+  @@index([caseId, createdAt])
+  @@index([moderatorId, createdAt])
+}
+
+model Post {
+  id        String   @id @default(uuid())
+  authorId  String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  author      User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  reactions   PostReaction[]
+  comments    Comment[]
+
+  @@index([authorId])
+  @@index([createdAt])
+}
+
+model PostReaction {
+  id        String      @id @default(uuid())
+  postId    String
+  userId    String
+  type      ReactionType
+  createdAt DateTime    @default(now())
+
+  post Post  @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([postId])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  postId    String
+  authorId  String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  post   Post  @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author User  @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@index([authorId])
+}
