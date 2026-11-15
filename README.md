@@ -3,6 +3,7 @@
 Reflect is a social feedback and reputation platform where users can give meaningful feedback, respond to it, build friendships, and develop a reputation based on positive interactions.
 
 The backend is built with **Node.js, Express, PostgreSQL, Prisma, Redis, and JWT authentication**.
+**It doesn't have a frontend yet because I did not want to vibecode it and get something ugly and boring.**
 
 ## Features
 
